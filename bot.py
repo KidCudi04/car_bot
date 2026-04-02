@@ -21,12 +21,19 @@ SYNONYMS = {
     "mercedes": ["mercedes", "мерседес", "мерс", "mercedes-benz"],
     "audi": ["audi", "ауди"],
     "lexus": ["lexus", "лексус"],
+    "nissan": ["nissan", "ниссан"],
     "kia": ["kia", "киа"],
     "hyundai": ["hyundai", "хендай"],
     "subaru": ["subaru", "субару"],
     "mazda": ["mazda", "мазда"],
     "ford": ["ford", "форд"],
     "dodge": ["dodge", "додж"],
+    "mitsubishi": ["mitsubishi", "митсубиси"],
+    "porsche": ["porsche", "порш"],
+    "chevrolet": ["chevrolet", "шевроле"],
+    "honda": ["honda", "хонда"],
+    "volkswagen": ["volkswagen", "фольксваген"],
+    "haval": ["haval", "хавал"]
 }
  
  
@@ -144,7 +151,7 @@ async def check_cars():
         except Exception as e:
             print(f"[bot] Ошибка при проверке: {e}")
  
-        await asyncio.sleep(60)
+        await asyncio.sleep(300)
  
  
 @dp.message()
