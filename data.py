@@ -16,5 +16,5 @@ CARS = {
     "Chevrolet": ["Tahoe", "Lacetti", "Spark", "Camaro", "Malibu", "Corvette", "Nexia", "Onix", "Impala", "Matiz"],
     "Honda": ["Civic", "Accord", "CR-V", "Stream", "Fit", "HR-V", "Stepwgn", "Odyssey", "Torneo", "Integra"],
     "Volkswagen": ["Passat", "Golf", "Jetta", "Lamando", "ID.5", "ID.7", "Touareg"],
-    "Haval": ["Jolion", "F7", "F7x", "M6", "H7", "H8", "H9", "H6L", "Xiaolong"]
+    "Haval": ["Jolion", "F7", "F7x", "M6", "H7", "H8", "H9", "H1", "H6L", "Xiaolong"]
 }
