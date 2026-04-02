@@ -5,7 +5,7 @@ CARS = {
     "Audi": ["A6", "Q7", "A4", "A5", "A8", "RS 7", "RS 5"],
     "Lexus": ["RX", "LX", "ES", "NX", "IS", "GX", "LS", "GS", "UX", "LFA"],
     "Nissan": ["X-Trail", "Skyline", "GT-R", "Rogue", "Silvia", "180SX"],
-    "Kia": ["K5", "K7", "K8", "K9", "Sportage", "Sorento", "RIO", "Sportage", "Sorento", "Optima", "Carnival", "Morning"],
+    "Kia": ["K5", "K7", "K8", "K9", "Sportage", "Sorento", "RIO", "Optima", "Carnival", "Morning"],
     "Hyundai": ["Sonata", "Tucson", "Santa Fe", "Elantra", "Solaris", "Santa Fe", "Grandeur", "Kona", "Tiburon"],
     "Mazda": ["CX-5", "CX-9", "Mazda 6", "MX-5", "RX-7", "RX-8", "Atenza"],
     "Subaru": ["Forester", "Outback", "Impreza", "Impreza WRX", "Impreza WRX STI", "Legacy", "Crosstrek"],
