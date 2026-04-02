@@ -4,7 +4,7 @@ CARS = {
     "Mercedes": ["E-Class", "S-Class", "GLE", "C-Class", "GLS", "Maybach S-Класс", "AMG GT", "CLS", "GLA", "CLS AMG", "GLA AMG", "SLR McLaren", "CLK"],
     "Audi": ["A6", "Q7", "A4", "A5", "A8", "RS 7", "RS 5"],
     "Lexus": ["RX", "LX", "ES", "NX", "IS", "GX", "LS", "GS", "UX", "LFA"],
-    "Nissan": ["X-Trail", "Skyline", "Skyline R32", "Skyline R33", "Skyline R34", "GT-R", "Rogue", "Silvia", "180SX"],
+    "Nissan": ["X-Trail", "Skyline", "GT-R", "Rogue", "Silvia", "180SX"],
     "Kia": ["K5", "K7", "K8", "K9", "Sportage", "Sorento", "RIO", "Sportage", "Sorento", "Optima", "Carnival", "Morning"],
     "Hyundai": ["Sonata", "Tucson", "Santa Fe", "Elantra", "Solaris", "Santa Fe", "Grandeur", "Kona", "Tiburon"],
     "Mazda": ["CX-5", "CX-9", "Mazda 6", "MX-5", "RX-7", "RX-8", "Atenza"],
