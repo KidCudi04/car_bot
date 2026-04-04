@@ -49,11 +49,29 @@ def get_cars(pages=3):
                     continue
                 title = title_tag.get_text(strip=True)
  
-                # Цена
+                # 🔥 Цена — берём доллары и сомы отдельно
+                price = "Цена не указана"
                 price_tag = item.find("div", class_="block price")
-                price = price_tag.get_text(strip=True) if price_tag else "Цена не указана"
+                if price_tag:
+                    p_tag = price_tag.find("p")
+                    if p_tag:
+                        strong = p_tag.find("strong")
+                        dollar = strong.get_text(strip=True) if strong else ""
  
-                # 🔥 Год — берём из <p class="year-miles"><span>2024 г.</span>
+                        # Сомы — это текст после <br>
+                        br = p_tag.find("br")
+                        som = ""
+                        if br and br.next_sibling:
+                            som = str(br.next_sibling).strip()
+ 
+                        if dollar and som:
+                            price = f"{dollar}\n{som}"
+                        elif dollar:
+                            price = dollar
+                        else:
+                            price = price_tag.get_text(strip=True)
+ 
+                # Год
                 year = ""
                 year_tag = item.find("p", class_="year-miles")
                 if year_tag:
@@ -82,6 +100,7 @@ def get_cars(pages=3):
 if __name__ == "__main__":
     cars = get_cars(pages=1)
     for car in cars[:10]:
-        print(f"TITLE: {car['title']} | YEAR: {car['year']} | PRICE: {car['price']}")
+        print(f"TITLE: {car['title']} | YEAR: {car['year']}")
+        print(f"PRICE: {car['price']}")
         print("---")
  

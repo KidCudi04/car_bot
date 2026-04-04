@@ -41,26 +41,6 @@ def normalize(text):
     return text.lower().replace("-", " ").strip()
  
  
-def clean_price(price):
-    """Форматирует цену красиво: $ 36 000 / 3 150 000 сом"""
-    if not price:
-        return "Цена не указана"
- 
-    import re
-    price = price.strip()
- 
-    # Ищем доллары и сомы
-    dollar_match = re.search(r'\$\s*[\d\s]+', price)
-    som_match = re.search(r'[\d\s]+\s*сом', price)
- 
-    if dollar_match and som_match:
-        dollar = dollar_match.group().strip()
-        som = som_match.group().strip()
-        return f"{dollar}\n{som}"
-    
-    return price
- 
- 
 def matches(car, wish):
     title = normalize(car["title"])
     car_year = car.get("year", "").strip()
@@ -93,11 +73,6 @@ def main_menu():
  
  
 async def process_cars(notify_user_id=None, new_wish=None):
-    """
-    Парсит объявления и рассылает уведомления.
-    notify_user_id — если передан, обрабатываем только этого пользователя.
-    new_wish — если передан, ищем только по этому желанию (новая машина).
-    """
     cars = get_cars(pages=5)
  
     targets = (
@@ -113,7 +88,6 @@ async def process_cars(notify_user_id=None, new_wish=None):
         if user_id not in sent_links:
             sent_links[user_id] = set()
  
-        # 🔥 Если новая машина — ищем только по ней, не трогаем остальные
         wishes_to_check = [new_wish] if new_wish else wishes
  
         found_any = False
@@ -136,7 +110,9 @@ async def process_cars(notify_user_id=None, new_wish=None):
  
             header = "📌 Найдено по твоему запросу:" if new_wish else "🔥 Новое объявление!"
             year_str = f"\n📅 {car['year']} г." if car.get("year") else ""
-            price = clean_price(car.get("price", ""))
+ 
+            # 🔥 Цена уже красиво отформатирована в parser.py
+            price = car.get("price", "Цена не указана")
  
             text = (
                 f"{header}\n\n"
@@ -161,7 +137,6 @@ async def process_cars(notify_user_id=None, new_wish=None):
  
  
 async def check_cars():
-    """Фоновая задача: парсит каждые 5 минут."""
     while True:
         try:
             print("[bot] Фоновая проверка объявлений...")
@@ -272,7 +247,6 @@ async def handle(message: types.Message):
  
         wishlist[user_id].append(data)
  
-        # 🔥 НЕ сбрасываем sent_links — ищем только по новой машине
         if user_id not in sent_links:
             sent_links[user_id] = set()
  
@@ -287,7 +261,6 @@ async def handle(message: types.Message):
  
         user_state[user_id] = {}
  
-        # 🔥 Ищем только по новой машине, не трогаем остальные
         asyncio.create_task(process_cars(notify_user_id=user_id, new_wish=data))
  
     # ── Всё остальное ───────────────────────────────────────────────────────
