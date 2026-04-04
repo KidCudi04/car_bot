@@ -33,12 +33,32 @@ SYNONYMS = {
     "chevrolet": ["chevrolet", "шевроле"],
     "honda": ["honda", "хонда"],
     "volkswagen": ["volkswagen", "фольксваген"],
-    "haval": ["haval", "хавал"]
+    "haval": ["haval", "хавал"],
 }
  
  
 def normalize(text):
     return text.lower().replace("-", " ").strip()
+ 
+ 
+def clean_price(price):
+    """Форматирует цену красиво: $ 36 000 / 3 150 000 сом"""
+    if not price:
+        return "Цена не указана"
+ 
+    import re
+    price = price.strip()
+ 
+    # Ищем доллары и сомы
+    dollar_match = re.search(r'\$\s*[\d\s]+', price)
+    som_match = re.search(r'[\d\s]+\s*сом', price)
+ 
+    if dollar_match and som_match:
+        dollar = dollar_match.group().strip()
+        som = som_match.group().strip()
+        return f"{dollar}\n{som}"
+    
+    return price
  
  
 def matches(car, wish):
@@ -47,22 +67,14 @@ def matches(car, wish):
  
     brand = wish["brand"].lower()
     model = wish["model"].lower()
-    year = wish.get("year", "")  # пустая строка = год не указан
+    year = wish.get("year", "")
  
     brand_variants = SYNONYMS.get(brand, [brand])
  
-    # Проверяем бренд в названии
     brand_match = any(b in title for b in brand_variants)
- 
-    # Проверяем модель — берём первое слово модели (например "x7" из "X7")
     model_match = model.split()[0] in title
- 
     year_match = True if year == "" else (car_year == year)
-
-    # 🔍 ДЕБАГ
-    if brand_match or model_match:
-        print(f"title='{title}' | brand={brand_match} | model={model_match} | year={year_match} | wish={brand} {model}")
-
+ 
     return brand_match and model_match and year_match
  
  
@@ -80,10 +92,11 @@ def main_menu():
     ])
  
  
-async def process_cars(notify_user_id=None):
+async def process_cars(notify_user_id=None, new_wish=None):
     """
     Парсит объявления и рассылает уведомления.
     notify_user_id — если передан, обрабатываем только этого пользователя.
+    new_wish — если передан, ищем только по этому желанию (новая машина).
     """
     cars = get_cars(pages=5)
  
@@ -97,16 +110,17 @@ async def process_cars(notify_user_id=None):
         if not wishes:
             continue
  
-        is_first = user_id not in sent_links
- 
-        if is_first:
+        if user_id not in sent_links:
             sent_links[user_id] = set()
+ 
+        # 🔥 Если новая машина — ищем только по ней, не трогаем остальные
+        wishes_to_check = [new_wish] if new_wish else wishes
  
         found_any = False
  
         for car in cars:
             matched = False
-            for wish in wishes:
+            for wish in wishes_to_check:
                 if matches(car, wish):
                     matched = True
                     break
@@ -120,13 +134,14 @@ async def process_cars(notify_user_id=None):
             sent_links[user_id].add(car["link"])
             found_any = True
  
-            header = "📌 Найдено по твоему запросу:" if is_first else "🔥 Новое объявление!"
+            header = "📌 Найдено по твоему запросу:" if new_wish else "🔥 Новое объявление!"
             year_str = f"\n📅 {car['year']} г." if car.get("year") else ""
+            price = clean_price(car.get("price", ""))
  
             text = (
                 f"{header}\n\n"
                 f"🚗 {car['title']}{year_str}\n"
-                f"💰 {car['price']}\n\n"
+                f"💰 {price}\n\n"
                 f"{car['link']}"
             )
  
@@ -135,15 +150,18 @@ async def process_cars(notify_user_id=None):
             except Exception as e:
                 print(f"[bot] Ошибка отправки сообщения {user_id}: {e}")
  
-        if is_first and not found_any:
+        if new_wish and not found_any:
             try:
-                await bot.send_message(user_id, "😔 По твоему запросу пока ничего не найдено. Уведомлю как появится!")
+                await bot.send_message(
+                    user_id,
+                    "😔 По твоему запросу пока ничего не найдено. Уведомлю как появится!"
+                )
             except Exception as e:
                 print(f"[bot] Ошибка отправки сообщения {user_id}: {e}")
  
  
 async def check_cars():
-    """Фоновая задача: парсит каждые 60 секунд."""
+    """Фоновая задача: парсит каждые 5 минут."""
     while True:
         try:
             print("[bot] Фоновая проверка объявлений...")
@@ -227,7 +245,6 @@ async def handle(message: types.Message):
         and text in CARS.get(user_state[user_id]["brand"], [])
     ):
         user_state[user_id]["model"] = text
-        # 🔥 Предлагаем ввести год или пропустить
         await message.answer(
             "✏️ Введи год (например: 2022) или пропусти:",
             reply_markup=make_keyboard(["⏭ Пропустить год"]),
@@ -237,7 +254,7 @@ async def handle(message: types.Message):
     elif "brand" in user_state[user_id] and "model" in user_state[user_id]:
  
         if text == "⏭ Пропустить год":
-            user_state[user_id]["year"] = ""  # без фильтра по году
+            user_state[user_id]["year"] = ""
         elif not text.isdigit():
             await message.answer("Введи корректный год (например: 2022) или нажми «⏭ Пропустить год»")
             return
@@ -255,8 +272,9 @@ async def handle(message: types.Message):
  
         wishlist[user_id].append(data)
  
-        # 🔥 Сбрасываем историю — бот сразу найдёт все объявления
-        sent_links.pop(user_id, None)
+        # 🔥 НЕ сбрасываем sent_links — ищем только по новой машине
+        if user_id not in sent_links:
+            sent_links[user_id] = set()
  
         year_display = data['year'] if data.get('year') else "любой"
         await message.answer(
@@ -269,8 +287,8 @@ async def handle(message: types.Message):
  
         user_state[user_id] = {}
  
-        # 🔥 Мгновенный поиск — не ждём 60 сек
-        asyncio.create_task(process_cars(notify_user_id=user_id))
+        # 🔥 Ищем только по новой машине, не трогаем остальные
+        asyncio.create_task(process_cars(notify_user_id=user_id, new_wish=data))
  
     # ── Всё остальное ───────────────────────────────────────────────────────
     else:
